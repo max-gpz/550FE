@@ -1,0 +1,110 @@
+---
+title: "FE550 - Assignment 2"
+author: "Gang Ping Zhu"
+date: "June 18, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("stringr")
+library("purrr")
+library("dplyr")
+library("highcharter")
+library("ggplot2")
+n <- 5
+
+set.seed(123)
+setwd("C:/Users/Administrator/Documents/Stevens/FE550")
+netflix <- read.csv("NetflixShows.xls", header = TRUE)
+
+releases_by_year <- netflix %>% select(title, rating, release.year) %>% group_by(release.year) %>% 
+  summarise( movies_per_year = n()) %>%
+  arrange(desc(movies_per_year))
+
+ratings_by_year <- netflix %>% select(title, rating, release.year) %>% group_by(rating, release.year) %>% 
+  summarise( movies_per_year = n()) %>%
+  arrange(desc(movies_per_year))
+
+ratings_2yr_compare <- ratings_by_year %>%
+  filter(
+    release.year %in% c(2005, 2015)
+  ) %>%  
+  print()
+```
+# 1000 Netflix Shows/Movies
+
+The following dataset was downloaded from Kaggle at https://www.kaggle.com/chasewillden/netflix-shows. With Netflix being one of the prominent modern outlets for entertainment, we’ll be considering the different ratings from cable broadcasting networks and Motion Picture Association of America on Netflix shows and movies over the years. Netflix is also used as it’s more common in more modern households than any other streaming service. 
+
+The media has indicated that violence (or the demand of violence) in shows has increased in recent years thus causing modern society to be more violent. To determine if there has been a shift on what’s being produced, we’ll be looking at the data across the years of when they were produced to determine if there is an increase in demand for more violence/“restricted” content. Choosing from Netflix also helps us remove any movies/shows that would have been outliers as Netflix has to regularly curate their content in order to balance their costs. 
+
+Our first visual below is graph depicting the 1000 movies in the dataset. The graph shows when each movie was released and what their official guidance rating is along with their user rating. 
+
+
+```{r, echo = FALSE}
+
+hchart(netflix, "scatter", hcaes(x = release.year, y = user.rating.score, group = rating)) %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+
+```
+
+Let's start simple with our analysis with a couple of different charts depicting the landscape of these categories with these 1000 films and shows. In the pie chart below, we can see that TV-14, PG, TV-MA, and G are among the largest groups of films/shows on Netflix. 
+
+```{r, echo = FALSE}
+hchart(netflix$rating, "pie", colorByPoint = TRUE) %>% 
+  hc_title(text = "Netflix Shows/Films") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+As there are many categories, the pie chart doesn’t give us the immediate visual of how much more the dominant categories are in comparison to the other categories so we’ll need to dissect the visuals a bit more by showing them as columns of data. In the graphs below, we see a waterfall graph and a more standard bar graph showing the different types of categories and their direct comparisons with each other. 
+
+```{r, echo = FALSE}
+hchart(netflix$rating, "waterfall", colorByPoint = TRUE, name = "Ratings") %>% 
+  hc_title(text = "Netflix Shows/Films") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+```{r, echo = FALSE}
+hchart(netflix$rating, colorByPoint = TRUE, name = "Ratings") %>% 
+  hc_title(text = "Netflix Shows/Films") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+An interesting thing to note is that while we’ve grouped all ratings for movies and shows together, there is a distinct difference in their numbers. Looking at the bar graph, the movie categories are on the left and the TV categories are on the right. (You can filter out specific rating categories by clicking on them in the legend to change the visual of the graph.) 
+
+If you look at movies, you’ll see that there are more PG and G rated movies than R, PG-13, or Not Rated movies. With TV shows, it’s a different story, we can see that the TV-MA and TV-14 categories are higher than their counter parts. 
+
+Looking at the number of categories doesn't give us a sense of trend over time on these categories and whether the past few years have introduced more violent films/shows. Let's dive into more detail about how many of each ratings category are released every year by looking at the graph below to determine which ratings are being produced the most every year. 
+
+```{r, echo = FALSE}
+hchart(ratings_by_year, "column", hcaes(x = release.year, y = movies_per_year, group = rating)) %>% 
+  hc_title(text = "Netflix Shows/Films by Release Year") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+While it's hard to decipher each category based on the number of categories and the number of years within the graph, it's clear that the TV-14 category is the one produced the most in recent years. In 2016, it holds the highest to date with 111 releases with the TV-14 category on Netflix. 
+
+In the bubble graph below, we see more of the differences between each year and how many of each rating category is produced. Through this view, it's clear that with TV shows, the more mature content is being released more in recent years but with movies, the opposite is true where there is an increase in less mature content. This does make sense as there are a lot more movies geared towards children these days that also draw adults in such as "Beauty and the Beast" and "Moana"
+
+
+```{r, echo = FALSE}
+hchart(ratings_by_year, "bubble", hcaes(x = release.year, y = movies_per_year, group = rating, size = movies_per_year)) %>% 
+  hc_title(text = "Netflix Shows/Films by Release Year") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+As the data shows that recent years have generated more shows that are mature, let's take a direct comparison between a decade to clearly visual the difference in production of entertainment. In the graph below, we’ll be looking at release from 2005 compared to release from 2015. From the graph, it looks like the content in 2005 is not prioritized or curated for Netflix so this will not provide the best indicator of whether there has been increase in growth of mature content. From the graph, it looks like content production has increased overall from 2005 to 2015. The TV-14 category seems to have grown the most over the decade. 
+
+```{r, echo = FALSE}
+hchart(ratings_2yr_compare, "column", hcaes(x = rating, y = movies_per_year, group = release.year)) %>% 
+  hc_add_theme(hc_theme_db()) %>% 
+  hc_title(text = "Netflix Shows/Films in 2005 and 2015") %>% 
+  hc_exporting(enabled = TRUE) # enable exporting option
+```
+
+## Conclusion
+
+Looking at the data of Netflix and the content that they’ve curated, there does seem to be more of a shift towards mature content for TV shows but the opposite is true for movies. There are constraints to this data as the movies and TV shows have been filtered for those that Netflix believe are desired by the general audience. It’s also limited to the content that is made available to Netflix. There are other content subscriptions that are available but Netflix is a good enough indicator as it is currently the most popular streaming service. Based on the analysis that we’ve seen above, it’s clear that in terms of content being distributed by Netflix, the shows that are geared towards people who are age 14 and above are the dominate categories and they have been increasing in the past few years. The movie industry seems to be reversal of that effect and it might be due to how they want to draw audiences out to the theatres. A general audience likely doesn’t require a baby sitter so families can go together and they also appeal to adults that want a light and fun time at the movies. Whereas Netflix only requires a TV and internet, people must go out of their way to see a movie. In the modern days of trying to meet aggressive ticket sale numbers, the general rating movies helps to cover a wider range of audience and potentially capture a larger number of sales. Looking at our analysis, it’s interesting to see that even though the public is looking for content that is more mature, the movie industry is keeping their view on profit margins and producing the movies that could potentially generate the most revenue. 
+
