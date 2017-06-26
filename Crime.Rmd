@@ -1,0 +1,175 @@
+---
+title: "FE550 - Assignment 1 - What do the crimes in the US tell about its population?"
+author: "Gang Ping Zhu"
+date: "June 4, 2017"
+output: html_document
+---
+
+# Crime in the United States
+
+Crime is prevalent in many parts of the United States. With such a focus on crime in some of our cities and making people feel safe in their homes, we're going to explore the overall crime of the country and how the numbers compare to the relative population. We want to see if there is a need for the federal government to intervene in any of the regions in terms of crime. We're going to look at the following analysis:
+
+* Crime by Population
+* Crime in the four regions of the United States
+* Historical crime rates
+
+
+The data is pulled from the FBI UCR. "The FBI's Uniform Crime Reporting (UCR) Program collects the number of offenses that come to the attention of law enforcement for violent crime and property crime, as well as data regarding clearances of these offenses. In addition, the FBI collects auxiliary information about these offenses (e.g., time of day of burglaries)." 
+
+The FBI categories crimes into two distinct categories, violent and property crimes. Each of the sub-categories fits into either the violent or property category. Violent crimes consist of murder, rape, robbery, and aggravated assault. Property crimes consist of burglary, larceny, motor theft, and arson. 
+
+
+```{r}
+library(ggmap)
+library(ggplot2)
+library(radarchart)
+```
+
+```{r}
+# Sources: https://ucr.fbi.gov/crime-in-the-u.s 
+setwd("C:\\Users\\gang.ping.m.zhu\\Documents\\Stevens\\FE550\\Assignment 1\\Zhu")
+uscrime <-read.csv("Offenses_Known_2015.csv", header = TRUE)
+crimeregion <- read.csv("crime_region_2015.csv", header=TRUE)
+histcrime <- read.csv("offense_analysis_2011-2015.csv", header=TRUE)
+histcrime2 <- read.csv("crime_analysis_2011-2015.csv", header=TRUE)
+groupcrimeregion <- crimeregion[-c(3,4,5,6,8,9,10), ]
+detcrimeregion <- crimeregion[-c(2,7), ]
+
+```
+
+# Crime by Population
+
+We want to initially look at population throughout the US and whether there is a correlation between population and the number of crimes. We've broken the categories as the FBI has into violent crimes and property crimes by population. Looking at the graphs below, there does seem to be a trend with more people, there is more prevalence of crime. There are some outliers in the lower populations where the high population doesn't necessary equate to a higher crime and other outliers where the population is lower but has a higher crime count. Both of those outliers could be caused by the income within those populations.  This analysis draws on city populations (rural and urban) throughout the United States. 
+
+```{r plot1}
+violentpop <- ggplot(data = uscrime, aes(x = Population, y = Violent.crime))
+violentpop <- violentpop + geom_line()
+violentpop <- violentpop + geom_smooth()
+violentpop <- violentpop + xlab("Population") + ylab("# of Violent Crimes") + ggtitle("Violent Crimes by Population")
+violentpop
+```
+
+Let's take a closer look at the population up to 2 million people to get a sense of their trends on violent crimes.
+
+```{r plot2}
+violentpop + coord_cartesian(xlim = c(0, 2000000))
+```
+
+
+```{r plot3}
+proppop <- ggplot(data = uscrime, aes(x = Population, y = Property.crime))
+proppop <- proppop + geom_line()
+proppop <- proppop + geom_smooth()
+proppop <- proppop + xlab("Population") + ylab("# of Property Crimes") + ggtitle("Property Crimes by Population")
+proppop
+```
+
+Similar to violent crimes, let's take a closer look at the population up to 2.5 million people to get a sense of their trends on property crimes.
+
+```{r plot4}
+proppop + coord_cartesian(xlim = c(0, 2500000))
+```
+
+Looking at this data, we confirm the general populace belief that larger populations do contribute to a higher crime rate. This doesn't reveal everything so we'll need to look at more details on population by region and their specific crimes in each area. 
+
+# Crime by the Four Distinct Regions of the US by Percent Distribution
+
+```{r plot5}
+chartJSRadar(groupcrimeregion)
+
+```
+We want to look at a breakdown of crime in the four regions of the US. By looking at the number of crimes compared to their population, we can see which regions of the US have a high crime relative to their population. These numbers are in percentages of the total United States. The largest region is the South in the US with a population of 37.7 million. Compared to the Midwest and the Northeast, the South and West regions account for more crime percentages of the total US population. With the South, they account for a bit under 40% of the population but account for a little more than 41% of the violent crimes in our country. 
+
+From a civilian's perspective, that seems to be high as that means the region accounts for more of the country's crimes than they do of the country's population. We'll need to look at more of the details of the crimes being committed to come to a more solid conclusion of what's occurring in these regions. With this initial view, it seems that the Northeast and the Midwest are the safer parts of the country as those regions account for a slightly lower percentage of crime compared to their contribution to the percentage of the population in the US.
+
+
+```{r plot6}
+chartJSRadar(detcrimeregion)
+```
+
+Looking at the more detailed crimes in each region, we start to get a feel for which regions are safer in terms of the type of violent crimes. This is a slightly different view than our initial high level as the Midwest and the South seem to be the places that harbor more violent crimes. Looking at the South, we see that murder and manslaughter percentages are higher than the population of the region. It's the only region where they account for a higher percentage of murders than their percentage of the population of the US. In the other regions, the murder percentage doesn't exceed to their population percentage. In the Northeast, the murder percentage is much lower than their percent of the population. In the Midwest and the West, their contributions to the murder rates are equal to their percentage of the population. They seem to be safer regions in terms of murder rates than the South. Although, it looks like in the west, there's a more likelihood that your car would be stolen than in the rest of the country. In the Northeast, it looks like you're more likely to be affected by a robbery. In the Midwest, it looks like the outlier crime is rape where it holds a 24% of the overall rape crimes of the country which is higher than their population contribution of 21%. 
+
+This information only tells us so much about the United States as we don't see the history of crimes in the US and whether government intervention is needed in any of the regions. The visual does provide an insight into which crimes are more prevalent in each region. 
+
+
+# Crime throughout the Years in the US
+```{r plot7}
+crime2011 <- ggplot(data = histcrime, aes(x = Classification, y = X2011))
+crime2011 <- crime2011 + geom_bar(stat="identity")
+crime2011 <- crime2011 + xlab("Type of Crime") + ylab("Number of Crimes") + ggtitle("Crimes in the US in 2011")
+crime2011
+```
+
+```{r plot8}
+crime2015 <- ggplot(data = histcrime, aes(x = Classification, y = X2015))
+crime2015 <- crime2015 + geom_bar(stat="identity")
+crime2015 <- crime2015 + xlab("Type of Crime") + ylab("Number of Crimes") + ggtitle("Crimes in the US in 2015")
+crime2015
+```
+
+Looking at the two graphs above with two distinct years of crime in United States, it doesn't look like the percentages of each crime category has changed significantly. It looks like the number of crimes overall has decreased from 2011 to 2015 as we see none of the categories exceed 6 million in 2015 whereas larceny-theft does exceed 6 million back in 2011. The two graphs separately don't give us an indication of the crime overall from year to year so let's take a close look at a time analysis of crime throughout the United States in the graph below.
+
+```{r plot9}
+crime11to15 <- ggplot(data = histcrime2, aes(x = Year, y = Count))
+crime11to15 <- crime11to15 + geom_bar(stat="identity", aes(fill = Type))
+crime11to15 <- crime11to15 + xlab("Years") + ylab("Number of Crimes") + ggtitle("Crimes in the US 2011-2015")
+crime11to15
+```
+
+```{r plot10}
+violenhistcrime <- histcrime2[!(histcrime2$Type %in% c("Burglary", "Larceny-theft", "Motor vehicle theft")), ]
+vcrime <- ggplot(data = violenhistcrime, aes(x = Year, y = Count))
+vcrime <- vcrime + geom_bar(stat="identity", aes(fill = Type))
+vcrime <- vcrime + xlab("Years") + ylab("Number of Crimes") + ggtitle("Violent Crimes in the US 2011-2015")
+vcrime
+```
+
+Looking at the charts above, we see that year over year, the Larceny-theft crimes are shrinking in its overall contribution to the number of crimes in the United States. Burglary also seems to be on a downward trend. We can't see the trends of motor theft, murder, rape and robbery in this visual so we'll need a different lens into our data. With this view, it could be an overall decrease in all crime that's depicting the graph in this manner so let's look at each crime category separately to draw a more detailed conclusion to our analysis. 
+
+```{r plot11}
+linecrime11to15 <- ggplot(data = histcrime2, aes(x = Year, y = Count, group = Type, color = Type))
+linecrime11to15 <- linecrime11to15 + geom_line() + geom_point()
+linecrime11to15
+
+```
+
+In the line graph above, we see that our earlier conclusions on burglary and larceny are going through downward trends in the United States. With its large counts of larceny and burglary, it can be hard to make conclusions about the other crimes so we'll need a graph that depicts the other crimes. 
+
+In the line graph below that disregards burglary and larceny, we can properly see the trends of motor vehicle theft and robbery. Both of those crimes experienced a downward trend but they look to be on the rise in 2015 from 2014. The numbers in 2015 still appear to be lower than their peak in 2012. With this line graph, it's still hard to see the trends of rape and murder rates so we'll look at them separately as their numbers are much lower than all other crimes. 
+
+
+```{r plot12}
+dethistcrime <- histcrime2[!(histcrime2$Type %in% c("Burglary", "Larceny-theft")), ]
+lesslinecrime11to15 <- ggplot(data = dethistcrime, aes(x = Year, y = Count, group = Type, color = Type))
+lesslinecrime11to15 <- lesslinecrime11to15 + geom_line() + geom_point()
+lesslinecrime11to15
+
+```
+
+
+```{r plot13}
+murdercrime <- histcrime2[(histcrime2$Type %in% c("Murder")), ]
+crimemurder <- ggplot(data = murdercrime, aes(x = Year, y = Count, group = Type, color = Type))
+crimemurder <- crimemurder + geom_line() + geom_point()
+crimemurder
+
+```
+
+
+```{r plot14}
+rapecrime <- histcrime2[(histcrime2$Type %in% c("Rape")), ]
+crimerape <- ggplot(data = rapecrime, aes(x = Year, y = Count, group = Type, color = Type))
+crimerape <- crimerape + geom_line() + geom_point()
+crimerape
+
+```
+
+With the two separate line graphs above on murder and rape, we see that those two violent crimes faced a downward period before going to peak points in 2015. From these visuals, this is a bit troubling as it shows that as property crimes are receding, violent crimes are increasing. Although the amount of their change isn't 1 to 1, there should be research into why those crimes are on the rise across the United States. 
+
+One theory could be as we move into a more digital age; physical goods no longer carry the perceived value that they used to. Instead, we see society placing more value on their digital personas which could instill emotions of malice from other individuals due to envy and jealously. 
+
+With this data set, we won't be able to dive deep into those questions but we will be able to make a determination on whether regional crime is getting out of control and overall needs federal intervention.
+
+
+# Conclusion
+Overall, looking at the data, crime is decreasing across the United States. This leads us to believe that federal intervention is not required as we faced our worst numbers of crime in 2011 and not in recent years. Even with the analysis of the murder and rape crimes on the rise, federal intervention doesn't seem to be needed as local law enforcement should have the capacity to tackle these crimes as property crimes fall throughout the United States.
